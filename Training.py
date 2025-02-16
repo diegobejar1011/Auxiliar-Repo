@@ -18,7 +18,6 @@ class Coach:
         self.loss_histories = []
         self.learning_rates = []
 
-
         self.table_frame = ttk.Frame(self.frame)
         self.table_frame.grid(row=2, column=0, columnspan=2, sticky="ew", pady=10)
 
@@ -30,7 +29,6 @@ class Coach:
         self.tree.heading("Iteraciones", text="Iteraciones")
 
         self.tree.grid(row=0, column=0, sticky="nsew")
-
 
         self.scrollbar = ttk.Scrollbar(self.table_frame, orient="vertical", command=self.tree.yview)
         self.scrollbar.grid(row=0, column=1, sticky="ns")
@@ -70,7 +68,6 @@ class Coach:
             modelo = Model(input_dim, lr)
             loss_history, initial_weights, final_weights, error, epochs = modelo.train(X_tensor, y_tensor)
 
-            
             self.table_data.append((
                 f"{lr:.4f}",
                 self.vector_to_str(initial_weights),
@@ -87,22 +84,28 @@ class Coach:
 
     def vector_to_str(self, vector):
         """Convierte un vector en una cadena legible para la tabla."""
-        
         if isinstance(vector, (tuple, list)) and isinstance(vector[0], np.ndarray):
             vector = vector[0].flatten()
         
         return "[" + ", ".join([f"{val:.4f}" for val in vector]) + "]"
 
-
     def update_table(self):
         """Actualiza los datos de la tabla con los resultados del entrenamiento."""
-        
+        # Limpiar la tabla antes de agregar nuevos datos
         for item in self.tree.get_children():
             self.tree.delete(item)
 
-        
+        # Imprimir los resultados en la consola
+        print("\nResultados del Entrenamiento:")
+        print("{:<20} {:<30} {:<30} {:<15} {:<10}".format(
+            "Tasa de aprendizaje", "Pesos Iniciales", "Pesos Finales", "Error", "Iteraciones"
+        ))
+        print("-" * 105)
+
+        # Agregar los resultados a la tabla y a la consola
         for row in self.table_data:
             self.tree.insert("", "end", values=row)
+            print("{:<20} {:<30} {:<30} {:<15} {:<10}".format(*row))
 
     def plot_training_results(self):
         """Genera y muestra la gráfica de las pérdidas durante el entrenamiento."""
@@ -110,12 +113,10 @@ class Coach:
             print("No hay datos de entrenamiento para graficar.")
             return
 
-        
         if not hasattr(self, 'graph_window'):
             self.graph_window = ttk.Frame(self.frame)
             self.graph_window.grid(row=1, column=0, columnspan=2, sticky="ew", pady=10)
 
-        
         for widget in self.graph_window.winfo_children():
             widget.destroy()
 
@@ -125,10 +126,9 @@ class Coach:
 
         ax.set_xlabel("Épocas")
         ax.set_ylabel("Pérdida")
-        ax.set_title("Historial de pérdida por tasa de aprendizaje")
+        ax.set_title("Evolución del error")
         ax.legend()
 
-        
         canvas = FigureCanvasTkAgg(fig, master=self.graph_window)
         canvas.get_tk_widget().pack(expand=True, fill="both")
         canvas.draw()
